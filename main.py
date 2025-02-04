@@ -22,14 +22,17 @@ except Exception as _e:
 
 class RandomStringGenerator:
     def __init__(self, root):
-        self.__settings()  # 初始化设置，后续移动到一个json文件中实现程序配置热更新
+        # 初始化设置，后续移动到一个json文件中实现程序配置热更新
+        self.__settings()
+
+        # 创建主窗口
         self.root = root
         self.root.title(self.window_title)
         self.root.geometry(f"{self.default_window_size[0]}x{self.default_window_size[1]}")
         self.root.minsize(self.min_window_size[0], self.min_window_size[1])
 
         # 初始化变量
-        self.expression_var = tk.StringVar(value="math.cos(total_seconds)")
+        self.expression_var = tk.StringVar(value=self.default_math_expression)
         self.length_var = tk.IntVar(value=20)
         self.include_upper = tk.BooleanVar(value=True)
         self.include_lower = tk.BooleanVar(value=True)
@@ -44,11 +47,13 @@ class RandomStringGenerator:
         self.root.bind('<Configure>', self.on_window_resize)
 
     def __settings(self):
-        self.length_min = 1
-        self.length_max = 1024
-        self.default_window_size = (550, 400)
-        self.min_window_size = (400, 300)
         self.window_title = "安全随机字符串生成器"
+        self.min_window_size = (400, 300)
+        self.default_window_size = (550, 400)
+        self.default_math_expression = "math.cos(total_seconds)"
+        self.length_min = 8
+        self.length_default = 20
+        self.length_max = 256
 
     def __create_widgets(self):
         main_frame = ttk.Frame(self.root, padding=20)
@@ -82,7 +87,13 @@ class RandomStringGenerator:
 
         # 长度设置
         ttk.Label(main_frame, text="字符串长度：").grid(row=3, column=0, sticky=tk.W)
-        length_spinbox = ttk.Spinbox(main_frame, from_=1, to=128, textvariable=self.length_var, width=10)
+        length_spinbox = ttk.Spinbox(
+            main_frame,
+            from_=self.length_min,
+            to=self.length_max,
+            textvariable=self.length_var,
+            width=10
+        )
         length_spinbox.grid(row=3, column=1, sticky=tk.W, padx=5)
         length_spinbox.bind('<KeyRelease>', lambda e: self.generate_string())
         length_spinbox.bind('<ButtonRelease>', lambda e: self.generate_string())
@@ -90,8 +101,8 @@ class RandomStringGenerator:
         # 滑条（调整为整数步进）
         length_scale = ttk.Scale(
             main_frame,
-            from_=8,
-            to=128,
+            from_=self.length_min,
+            to=self.length_max,
             variable=self.length_var,
             orient=tk.HORIZONTAL,
             command=lambda val: self.length_var.set(round(float(val)))
@@ -147,7 +158,7 @@ class RandomStringGenerator:
 
         ttk.Button(btn_frame, text="怎么使用", command=self.show_help).grid(row=0, column=0, sticky=tk.EW)
         ttk.Button(btn_frame, text="重新生成", command=self.generate_string).grid(row=0, column=1, padx=5, sticky=tk.EW)
-        ttk.Button(btn_frame, text="复制到剪贴板", command=self.copy_to_clipboard).grid(row=0, column=2,sticky=tk.EW)
+        ttk.Button(btn_frame, text="复制到剪贴板", command=self.copy_to_clipboard).grid(row=0, column=2, sticky=tk.EW)
 
     def toggle_algorithm(self, event):
         self.__useless_function(event)
@@ -161,18 +172,20 @@ class RandomStringGenerator:
     def generate_string(self):
         try:
             char_pool = self.get_char_pool()
-            length = self.format_length(self.length_var.get())
+            try:
+                length = self.format_length(self.length_var.get())
+            except tk.TclError:
+                self.length_var.set(self.length_default)
+                length = self.length_default
             if self.algorithm_var.get().startswith("secrets"):
                 generated = ''.join(secrets.choice(char_pool) for _ in range(length))
             else:
                 current_time = datetime.datetime.now()
                 time_str = current_time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
                 self.time_label.config(text=f"种子生成时间：{time_str}")
-
                 total_seconds = (
                         current_time - current_time.replace(hour=0, minute=0, second=0, microsecond=0)
                 ).total_seconds()
-
                 context = {
                     "math": math,
                     "total_seconds": total_seconds,
@@ -195,12 +208,11 @@ class RandomStringGenerator:
             messagebox.showerror("错误", f"生成过程中发生错误：\n{str(e)}")
 
     def format_length(self, length):
-        if length == "":
+        if length < self.length_min:
             self.length_var.set(self.length_min)
             length = self.length_min
-        elif length < self.length_min:
-            length = self.length_min
         elif length > self.length_max:
+            self.length_var.set(self.length_max)
             length = self.length_max
         return length
 
