@@ -109,6 +109,8 @@ class RandomStringGenerator:
             command=lambda val: self.length_var.set(round(float(val)))
         )
         length_scale.grid(row=3, column=2, columnspan=2, sticky=tk.EW)
+        length_scale.bind('<KeyRelease>', lambda e: self.generate_string())
+        length_scale.bind('<ButtonRelease>', lambda e: self.generate_string())
 
         # 字符类型选择
         ttk.Label(main_frame, text="包含字符类型：").grid(row=4, column=0, sticky=tk.W)
