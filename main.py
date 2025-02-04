@@ -33,7 +33,7 @@ class RandomStringGenerator:
 
         # 初始化变量
         self.expression_var = tk.StringVar(value=self.default_math_expression)
-        self.length_var = tk.IntVar(value=20)
+        self.length_var = tk.IntVar(value=self.length_default)
         self.include_upper = tk.BooleanVar(value=True)
         self.include_lower = tk.BooleanVar(value=True)
         self.include_special = tk.BooleanVar(value=False)
@@ -51,8 +51,8 @@ class RandomStringGenerator:
         self.min_window_size = (400, 300)
         self.default_window_size = (550, 400)
         self.default_math_expression = "math.cos(total_seconds)"
-        self.length_min = 8
-        self.length_default = 20
+        self.length_min = 1
+        self.length_default = 16
         self.length_max = 256
 
     def __create_widgets(self):
@@ -84,6 +84,7 @@ class RandomStringGenerator:
         self.expression_label.grid(row=2, column=0, sticky=tk.W)
         self.expression_entry = ttk.Entry(main_frame, textvariable=self.expression_var, width=40)
         self.expression_entry.grid(row=2, column=1, columnspan=3, sticky=tk.EW, padx=5)
+        self.toggle_algorithm(None)
 
         # 长度设置
         ttk.Label(main_frame, text="字符串长度：").grid(row=3, column=0, sticky=tk.W)
