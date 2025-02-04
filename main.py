@@ -1,5 +1,6 @@
 import ctypes
 import datetime
+import logging
 import math
 import random
 import secrets
@@ -7,18 +8,25 @@ import string
 import tkinter as tk
 from tkinter import ttk, messagebox, font
 
+# 设置logger格式
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.ERROR)
+
+# 高DPI适配
 try:
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
-except:
-    pass
+except Exception as e:
+    logger.exception(f"高DPI适配失败：{str(e)}")
 
 
 class RandomStringGenerator:
     def __init__(self, root):
+        self.__settings()  # 初始化设置，后续移动到一个json文件中实现程序配置热更新
         self.root = root
-        self.root.title("安全随机字符串生成器")
-        self.root.geometry("550x400")
-        self.root.minsize(400, 300)
+        self.root.title(self.window_title)
+        self.root.geometry(f"{self.default_window_size[0]}x{self.default_window_size[1]}")
+        self.root.minsize(self.min_window_size[0], self.min_window_size[1])
 
         # 初始化变量
         self.expression_var = tk.StringVar(value="math.cos(total_seconds)")
@@ -30,12 +38,19 @@ class RandomStringGenerator:
         self.result_var = tk.StringVar()
 
         # 创建UI组件
-        self.create_widgets()
+        self.__create_widgets()
         self.generate_string()  # 初始生成
         self.center_window()
         self.root.bind('<Configure>', self.on_window_resize)
 
-    def create_widgets(self):
+    def __settings(self):
+        self.length_min = 1
+        self.length_max = 1024
+        self.default_window_size = (550, 400)
+        self.min_window_size = (400, 300)
+        self.window_title = "安全随机字符串生成器"
+
+    def __create_widgets(self):
         main_frame = ttk.Frame(self.root, padding=20)
         main_frame.pack(fill=tk.BOTH, expand=True)
 
@@ -133,7 +148,7 @@ class RandomStringGenerator:
         ttk.Button(btn_frame, text="怎么使用", command=self.show_help).grid(row=0, column=0, sticky=tk.EW)
         ttk.Button(btn_frame, text="重新生成", command=self.generate_string).grid(row=0, column=1, padx=5, sticky=tk.EW)
         ttk.Button(btn_frame, text="复制到剪贴板", command=self.copy_to_clipboard).grid(row=0, column=2,
-                                                                                           sticky=tk.EW)
+                                                                                        sticky=tk.EW)
 
     def toggle_algorithm(self, event=None):
         if "secrets" in self.algorithm_var.get():
@@ -146,8 +161,7 @@ class RandomStringGenerator:
     def generate_string(self):
         try:
             char_pool = self.get_char_pool()
-            length = self.length_var.get()
-
+            length = self.format_length(self.length_var.get())
             if self.algorithm_var.get().startswith("secrets"):
                 generated = ''.join(secrets.choice(char_pool) for _ in range(length))
             else:
@@ -180,6 +194,16 @@ class RandomStringGenerator:
         except Exception as e:
             messagebox.showerror("错误", f"生成过程中发生错误：\n{str(e)}")
 
+    def format_length(self, length):
+        if length == "":
+            self.length_var.set(self.length_min)
+            length = self.length_min
+        elif length < self.length_min:
+            length = self.length_min
+        elif length > self.length_max:
+            length = self.length_max
+        return length
+
     def get_char_pool(self):
         char_pool = []
         if self.include_upper.get():
@@ -190,8 +214,7 @@ class RandomStringGenerator:
             char_pool.extend("!@#$%^&*()_+-=[]{}|;:',.<>?/`~")
 
         if not char_pool:
-            messagebox.showerror("错误", "至少需要选择一种字符类型！")
-            raise ValueError("Empty character pool")
+            raise ValueError("至少需要选择一种字符类型！")
 
         return char_pool
 
@@ -246,7 +269,8 @@ class RandomStringGenerator:
         y = (self.root.winfo_screenheight() // 2) - (height // 2)
         self.root.geometry(f'+{x}+{y}')
 
-    def show_help(self):
+    @staticmethod
+    def show_help():
         help_text = """欢迎使用随机字符串生成器！
 
 使用方法：
