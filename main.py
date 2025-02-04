@@ -16,8 +16,8 @@ logging.basicConfig(level=logging.ERROR)
 # 高DPI适配
 try:
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
-except Exception as e:
-    logger.exception(f"高DPI适配失败：{str(e)}")
+except Exception as _e:
+    logger.exception(f"高DPI适配失败：{str(_e)}")
 
 
 class RandomStringGenerator:
@@ -147,10 +147,10 @@ class RandomStringGenerator:
 
         ttk.Button(btn_frame, text="怎么使用", command=self.show_help).grid(row=0, column=0, sticky=tk.EW)
         ttk.Button(btn_frame, text="重新生成", command=self.generate_string).grid(row=0, column=1, padx=5, sticky=tk.EW)
-        ttk.Button(btn_frame, text="复制到剪贴板", command=self.copy_to_clipboard).grid(row=0, column=2,
-                                                                                        sticky=tk.EW)
+        ttk.Button(btn_frame, text="复制到剪贴板", command=self.copy_to_clipboard).grid(row=0, column=2,sticky=tk.EW)
 
-    def toggle_algorithm(self, event=None):
+    def toggle_algorithm(self, event):
+        self.__useless_function(event)
         if "secrets" in self.algorithm_var.get():
             self.expression_entry.config(state=tk.DISABLED)
             self.time_label.config(text="安全随机生成（不使用种子）")
@@ -240,6 +240,7 @@ class RandomStringGenerator:
             self.result_text.configure(wrap=tk.NONE)
 
     def copy_on_double_click(self, event):
+        self.__useless_function(event)
         if self.result_text.cget('wrap') == tk.NONE:
             self.result_text.tag_add(tk.SEL, '1.0', tk.END)
             self.copy_to_clipboard()
@@ -296,8 +297,14 @@ class RandomStringGenerator:
         self.root.clipboard_append(selected)
         messagebox.showinfo("成功", "已复制到剪贴板！")
 
+    def __useless_function(self, *args):
+        """暂时使用该函数来处理事件绑定的参数问题：
+        被绑定函数中要含有 event，但又无用。
+        """
+        pass
+
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = RandomStringGenerator(root)
-    root.mainloop()
+    root_window = tk.Tk()
+    app = RandomStringGenerator(root_window)
+    root_window.mainloop()
