@@ -36,6 +36,7 @@ class RandomStringGenerator:
         self.length_var = tk.IntVar(value=self.length_default)
         self.include_upper = tk.BooleanVar(value=True)
         self.include_lower = tk.BooleanVar(value=True)
+        self.include_number = tk.BooleanVar(value=True)
         self.include_special = tk.BooleanVar(value=False)
         self.algorithm_var = tk.StringVar(value="secrets")
         self.result_var = tk.StringVar()
@@ -70,7 +71,7 @@ class RandomStringGenerator:
             textvariable=self.algorithm_var,
             values=["secrets (安全随机)", "random (种子随机)"],
             state="readonly",
-            width=18
+            width=20
         )
         algorithm_combobox.grid(row=0, column=1, sticky=tk.W)
         algorithm_combobox.bind("<<ComboboxSelected>>", self.toggle_algorithm)
@@ -118,8 +119,10 @@ class RandomStringGenerator:
                         command=self.generate_string).grid(row=4, column=1, sticky=tk.W)
         ttk.Checkbutton(main_frame, text="小写字母", variable=self.include_lower,
                         command=self.generate_string).grid(row=4, column=2, sticky=tk.W)
-        ttk.Checkbutton(main_frame, text="特殊字符", variable=self.include_special,
+        ttk.Checkbutton(main_frame, text="印度数字", variable=self.include_number,
                         command=self.generate_string).grid(row=4, column=3, sticky=tk.W)
+        ttk.Checkbutton(main_frame, text="特殊字符", variable=self.include_special,
+                        command=self.generate_string).grid(row=4, column=4, sticky=tk.W)
 
         # 结果显示区域
         result_frame = ttk.Frame(main_frame)
@@ -206,9 +209,15 @@ class RandomStringGenerator:
             self.result_text.delete('1.0', tk.END)
             self.result_text.insert(tk.END, generated)
             self.adjust_wrap_mode()
-
+        except SyntaxError as e:
+            if not self.expression_var.get():
+                if messagebox.askyesno("表达式为空", "种子表达式为空，是否使用默认表达式？"):
+                    self.expression_var.set(self.default_math_expression)
+                    self.generate_string()
+            else:
+                messagebox.showerror("语法错误", f"生成过程中发生错误：\n{str(e)}")
         except Exception as e:
-            messagebox.showerror("错误", f"生成过程中发生错误：\n{str(e)}")
+            messagebox.showerror("未知错误", f"生成过程中发生错误：\n{str(e)}")
 
     def format_length(self, length):
         if length < self.length_min:
@@ -225,6 +234,8 @@ class RandomStringGenerator:
             char_pool.extend(string.ascii_uppercase)
         if self.include_lower.get():
             char_pool.extend(string.ascii_lowercase)
+        if self.include_number.get():
+            char_pool.extend("0123456789")
         if self.include_special.get():
             char_pool.extend("!@#$%^&*()_+-=[]{}|;:',.<>?/`~")
 
