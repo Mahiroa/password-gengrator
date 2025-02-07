@@ -59,6 +59,8 @@ class RandomStringGenerator:
     def __create_widgets(self):
         main_frame = ttk.Frame(self.root, padding=20)
         main_frame.pack(fill=tk.BOTH, expand=True)
+        checkbox_frame = ttk.Frame(main_frame, padding=0)
+        checkbox_frame.grid(row=4, column=0, columnspan=4, sticky=tk.W)
 
         # 配置网格布局权重
         main_frame.columnconfigure((1, 2), weight=1)
@@ -114,15 +116,24 @@ class RandomStringGenerator:
         length_scale.bind('<ButtonRelease>', lambda e: self.generate_string())
 
         # 字符类型选择
-        ttk.Label(main_frame, text="包含字符类型：").grid(row=4, column=0, sticky=tk.W)
-        ttk.Checkbutton(main_frame, text="大写字母", variable=self.include_upper,
-                        command=self.generate_string).grid(row=4, column=1, sticky=tk.W)
-        ttk.Checkbutton(main_frame, text="小写字母", variable=self.include_lower,
-                        command=self.generate_string).grid(row=4, column=2, sticky=tk.W)
-        ttk.Checkbutton(main_frame, text="印度数字", variable=self.include_number,
-                        command=self.generate_string).grid(row=4, column=3, sticky=tk.W)
-        ttk.Checkbutton(main_frame, text="特殊字符", variable=self.include_special,
-                        command=self.generate_string).grid(row=4, column=4, sticky=tk.W)
+        # ttk.Label(main_frame, text="包含字符类型：").grid(row=4, column=0, sticky=tk.W)
+        # ttk.Checkbutton(main_frame, text="大写字母", variable=self.include_upper,
+        #                 command=self.generate_string).grid(row=4, column=1, sticky=tk.W)
+        # ttk.Checkbutton(main_frame, text="小写字母", variable=self.include_lower,
+        #                 command=self.generate_string).grid(row=4, column=2, sticky=tk.W)
+        # ttk.Checkbutton(main_frame, text="阿拉伯数字", variable=self.include_number,
+        #                 command=self.generate_string).grid(row=4, column=3, sticky=tk.W)
+        # ttk.Checkbutton(main_frame, text="特殊字符", variable=self.include_special,
+        #                 command=self.generate_string).grid(row=4, column=4, sticky=tk.W)
+        ttk.Label(checkbox_frame, text="包含字符类型：").pack(side=tk.LEFT)
+        ttk.Checkbutton(checkbox_frame, text="大写字母", variable=self.include_upper,
+                        command=self.generate_string).pack(side=tk.LEFT)
+        ttk.Checkbutton(checkbox_frame, text="小写字母", variable=self.include_lower,
+                        command=self.generate_string).pack(side=tk.LEFT)
+        ttk.Checkbutton(checkbox_frame, text="阿拉伯数字", variable=self.include_number,
+                        command=self.generate_string).pack(side=tk.LEFT)
+        ttk.Checkbutton(checkbox_frame, text="特殊字符", variable=self.include_special,
+                        command=self.generate_string).pack(side=tk.LEFT)
 
         # 结果显示区域
         result_frame = ttk.Frame(main_frame)
@@ -296,16 +307,16 @@ class RandomStringGenerator:
         y = (self.root.winfo_screenheight() // 2) - (height // 2)
         self.root.geometry(f'+{x}+{y}')
 
-    @staticmethod
-    def show_help():
-        help_text = """欢迎使用随机字符串生成器！
+    def show_help(self):
+        help_text = f"""欢迎使用随机字符串生成器！
 
 使用方法：
-1. 种子表达式：可以使用数学表达式，基于当前时间生成种子（支持math模块函数）
-2. 字符串长度：通过滑块或输入框设置长度（1-1024）
-3. 字符类型：勾选需要包含的字符类型
-4. 重新生成：点击按钮或调整设置自动生成新字符串
-5. 双击结果框或点击复制按钮将字符串复制到剪贴板
+1. 安全随机：使用secrets模块生成安全随机字符串
+2. 种子表达式：可以使用数学表达式，基于当前时间生成种子（支持math模块函数）
+3. 字符串长度：通过滑块或输入框设置长度（{self.length_min}-{self.length_max}）
+4. 字符类型：勾选需要包含的字符类型
+5. 重新生成：点击按钮或调整设置自动生成新字符串
+6. 双击结果框或点击复制按钮将字符串复制到剪贴板
 
 注意事项：
 - 至少需要选择一种字符类型
