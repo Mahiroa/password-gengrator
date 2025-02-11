@@ -48,7 +48,10 @@ class RandomStringGenerator:
         self.root.bind('<Configure>', self.on_window_resize)
 
     def __settings(self):
-        self.window_title = "安全随机字符串生成器"
+        self.window_title = self.__generate_main_window_title(
+            title="安全随机字符串生成器",
+            version=(1, 1, 0)
+        )
         self.min_window_size = (400, 300)
         self.default_window_size = (550, 400)
         self.default_math_expression = "math.cos(total_seconds)"
@@ -56,11 +59,14 @@ class RandomStringGenerator:
         self.length_default = 16
         self.length_max = 256
 
+    @staticmethod
+    def __generate_main_window_title(version: tuple, title: str) -> str:
+        window_title = f"{title} v{version[0]}.{version[1]}.{version[2]}"
+        return window_title
+
     def __create_widgets(self):
         main_frame = ttk.Frame(self.root, padding=20)
         main_frame.pack(fill=tk.BOTH, expand=True)
-        checkbox_frame = ttk.Frame(main_frame, padding=0)
-        checkbox_frame.grid(row=4, column=0, columnspan=4, sticky=tk.W)
 
         # 配置网格布局权重
         main_frame.columnconfigure((1, 2), weight=1)
@@ -73,7 +79,7 @@ class RandomStringGenerator:
             textvariable=self.algorithm_var,
             values=["secrets (安全随机)", "random (种子随机)"],
             state="readonly",
-            width=20
+            width=15
         )
         algorithm_combobox.grid(row=0, column=1, sticky=tk.W)
         algorithm_combobox.bind("<<ComboboxSelected>>", self.toggle_algorithm)
@@ -90,21 +96,21 @@ class RandomStringGenerator:
         self.toggle_algorithm(None)
 
         # 长度设置
-        ttk.Label(main_frame, text="字符串长度：").grid(row=3, column=0, sticky=tk.W)
+        length_frame = ttk.Frame(main_frame)
+        length_frame.grid(row=3, column=0, columnspan=4, sticky=tk.W)
+        ttk.Label(length_frame, text="字符串长度：").grid(row=3, column=0, sticky=tk.W)
         length_spinbox = ttk.Spinbox(
-            main_frame,
+            length_frame,
             from_=self.length_min,
             to=self.length_max,
             textvariable=self.length_var,
-            width=10
+            width=8
         )
         length_spinbox.grid(row=3, column=1, sticky=tk.W, padx=5)
         length_spinbox.bind('<KeyRelease>', lambda e: self.generate_string())
         length_spinbox.bind('<ButtonRelease>', lambda e: self.generate_string())
-
-        # 滑条（调整为整数步进）
-        length_scale = ttk.Scale(
-            main_frame,
+        length_scale = ttk.Scale(  # 滑条（调整为整数步进）
+            length_frame,
             from_=self.length_min,
             to=self.length_max,
             variable=self.length_var,
@@ -112,19 +118,18 @@ class RandomStringGenerator:
             command=lambda val: self.length_var.set(round(float(val)))
         )
         length_scale.grid(row=3, column=2, columnspan=2, sticky=tk.EW)
+
+        self.root.bind('<Right>', self.right_arrow_binding)
+        self.root.bind('<Left>', self.left_arrow_binding)
+        self.root.bind('<Shift-Right>', self.right_arrow_binding_fast)
+        self.root.bind('<Shift-Left>', self.left_arrow_binding_fast)
         length_scale.bind('<KeyRelease>', lambda e: self.generate_string())
         length_scale.bind('<ButtonRelease>', lambda e: self.generate_string())
 
         # 字符类型选择
-        # ttk.Label(main_frame, text="包含字符类型：").grid(row=4, column=0, sticky=tk.W)
-        # ttk.Checkbutton(main_frame, text="大写字母", variable=self.include_upper,
-        #                 command=self.generate_string).grid(row=4, column=1, sticky=tk.W)
-        # ttk.Checkbutton(main_frame, text="小写字母", variable=self.include_lower,
-        #                 command=self.generate_string).grid(row=4, column=2, sticky=tk.W)
-        # ttk.Checkbutton(main_frame, text="阿拉伯数字", variable=self.include_number,
-        #                 command=self.generate_string).grid(row=4, column=3, sticky=tk.W)
-        # ttk.Checkbutton(main_frame, text="特殊字符", variable=self.include_special,
-        #                 command=self.generate_string).grid(row=4, column=4, sticky=tk.W)
+        checkbox_frame = ttk.Frame(main_frame)
+        checkbox_frame.grid(row=4, column=0, columnspan=5, sticky=tk.NSEW)
+        checkbox_frame.columnconfigure((0, 1, 2, 3), weight=1)
         ttk.Label(checkbox_frame, text="包含字符类型：").pack(side=tk.LEFT)
         ttk.Checkbutton(checkbox_frame, text="大写字母", variable=self.include_upper,
                         command=self.generate_string).pack(side=tk.LEFT)
@@ -138,7 +143,6 @@ class RandomStringGenerator:
         # 结果显示区域
         result_frame = ttk.Frame(main_frame)
         result_frame.grid(row=5, column=0, columnspan=4, sticky=tk.NSEW, pady=10)
-
         self.result_text = tk.Text(
             result_frame,
             wrap=tk.NONE,
@@ -154,10 +158,6 @@ class RandomStringGenerator:
         self.result_text.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         # 滚动条
-        scroll_x = ttk.Scrollbar(result_frame, orient=tk.HORIZONTAL, command=self.result_text.xview)
-        scroll_x.pack(side=tk.BOTTOM, fill=tk.X)
-        self.result_text.configure(xscrollcommand=scroll_x.set)
-
         scroll_y = ttk.Scrollbar(result_frame, orient=tk.VERTICAL, command=self.result_text.yview)
         scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
         self.result_text.configure(yscrollcommand=scroll_y.set)
@@ -176,6 +176,34 @@ class RandomStringGenerator:
         ttk.Button(btn_frame, text="怎么使用", command=self.show_help).grid(row=0, column=0, sticky=tk.EW)
         ttk.Button(btn_frame, text="重新生成", command=self.generate_string).grid(row=0, column=1, padx=5, sticky=tk.EW)
         ttk.Button(btn_frame, text="复制到剪贴板", command=self.copy_to_clipboard).grid(row=0, column=2, sticky=tk.EW)
+
+    def right_arrow_binding(self, event):
+        self.__useless_function(event)
+        current_value = self.length_var.get()
+        if current_value < self.length_max:
+            self.length_var.set(current_value + 1)
+        self.generate_string()
+
+    def right_arrow_binding_fast(self, event):
+        self.__useless_function(event)
+        current_value = self.length_var.get()
+        if current_value < self.length_max:
+            self.length_var.set(current_value + 10)
+        self.generate_string()
+
+    def left_arrow_binding(self, event):
+        self.__useless_function(event)
+        current_value = self.length_var.get()
+        if current_value > self.length_min:
+            self.length_var.set(current_value - 1)
+        self.generate_string()
+
+    def left_arrow_binding_fast(self, event):
+        self.__useless_function(event)
+        current_value = self.length_var.get()
+        if current_value > self.length_min:
+            self.length_var.set(current_value - 10)
+        self.generate_string()
 
     def toggle_algorithm(self, event):
         self.__useless_function(event)
