@@ -1,0 +1,74 @@
+{
+  "high_dpi_adaptation_failed": "高DPI適応に失敗しました",
+  "main_window_title": "安全なランダム文字列ジェネレーター",
+  "generate_algorithms": "アルゴリズムを生成する",
+  "safe_random": "安全なランダム",
+  "seed_random": "シードランダム",
+  "seed_generation_time": "シード生成時間",
+  "seed_expressions": "シード式",
+  "string_length": "文字列の長さ",
+  "character_type": "文字タイプを含む",
+  "uppercase_letters": "大文字",
+  "lowercase_letters": "小文字",
+  "digits": "アラビア数字",
+  "special_characters": "特殊文字",
+  "how_to_use": "使い方",
+  "rebuild": "再生成",
+  "copy_to_clipboard": "クリップボードにコピー",
+  "safe_random_introduce": "安全なランダム生成（シードを使用しない）",
+  "current_seed_time": "シード生成時間",
+  "char_pool_error": "少なくとも 1 つの文字タイプを選択する必要があります。",
+  "empty_expression_message_box": {
+    "title": "空の表現",
+    "message": "シード式が空です。デフォルトの式を使用しますか?"
+  },
+  "syntax_error": {
+    "title": "構文エラー",
+    "message": "シード式に構文エラーがあります。確認してください!"
+  },
+  "unknown_error": {
+    "title": "不明なエラー",
+    "message": "生成中にエラーが発生しました"
+  },
+  "help_message_box": {
+    "title": "使用方法のヘルプ",
+    "message": {
+      "welcome": "ランダム文字列ジェネレーターへようこそ！",
+      "usage": {
+        "safe_random": [
+          "セキュアランダム",
+          "シークレット モジュールを使用して安全なランダム文字列を生成する"
+        ],
+        "seed_expression": [
+          "種子発現",
+          "数式を使用して、現在の時刻に基づいてシードを生成できます（数学モジュール関数をサポート）"
+        ],
+        "diverse_characters": [
+          "キャラクターの多様性",
+          "大文字、小文字、数字、特殊文字が含まれ、カスタマイズ可能です"
+        ],
+        "string_length": [
+          "文字列の長さ",
+          "スライダーまたは入力ボックスで長さを設定します（{self.length_min}-{self.length_max}）"
+        ],
+        "character_type": [
+          "キャラクタータイプ",
+          "含めたい文字の種類をチェックしてください"
+        ],
+        "rebuild": [
+          "再生",
+          "ボタンをクリックするか設定を調整すると、新しい文字列が自動的に生成されます"
+        ],
+        "copy_method": [
+          "コピー",
+          "結果ボックスをダブルクリックするか、[コピー] ボタンをクリックして文字列をクリップボードにコピーします"
+        ]
+      },
+      "thank_you": []
+    }
+  },
+  "selected_message_box": {
+    "title": "成功",
+    "message": "クリップボードにコピーされました!"
+  }
+}

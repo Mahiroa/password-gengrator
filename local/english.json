@@ -1,0 +1,74 @@
+{
+  "high_dpi_adaptation_failed": "High DPI adaptation failed",
+  "main_window_title": "Secure random string generator",
+  "generate_algorithms": "Generation algorithm",
+  "safe_random": "Secure random",
+  "seed_random": "Seed random",
+  "seed_generation_time": "Seed generation time",
+  "seed_expressions": "Seed expression",
+  "string_length": "String length",
+  "character_type": "Contains character type",
+  "uppercase_letters": "Uppercase letters",
+  "lowercase_letters": "Lowercase letters",
+  "digits": "Arabic numerals",
+  "special_characters": "Special characters",
+  "how_to_use": "How to use",
+  "rebuild": "Regenerate",
+  "copy_to_clipboard": "Copy to clipboard",
+  "safe_random_introduce": "Secure random generation (without seed)",
+  "current_seed_time": "Seed generation time",
+  "char_pool_error": "You need to select at least one character type!",
+  "empty_expression_message_box": {
+    "title": "Empty expression",
+    "message": "The seed expression is empty. Do you want to use the default expression?"
+  },
+  "syntax_errors": {
+    "title": "Syntax error",
+    "message": "There is a syntax error in the seed expression. Please check!"
+  },
+  "unknown_errors": {
+    "title": "Unknown error",
+    "message": "An error occurred during the generation process"
+  },
+  "help_message_box": {
+    "title": "Usage help",
+    "message": {
+      "welcome": "Welcome to the random string generator!",
+      "usage": {
+        "safe_random": [
+          "Safe random",
+          "Use the secrets module to generate safe random strings"
+        ],
+        "seed_expressions": [
+          "Seed expression",
+          "You can use mathematical expressions to generate seeds based on the current time (support math module functions)"
+        ],
+        "the_characters_are_varied": [
+          "Characters are varied",
+          "Contains uppercase and lowercase letters, numbers and special characters, and can be customized"
+        ],
+        "string_length": [
+          "String length",
+          "Set the length through the slider or input box ({self.length_min}-{self.length_max})"
+        ],
+        "character_type": [
+          "Character type",
+          "Check the character type to be included"
+        ],
+        "rebuild": [
+          "Regenerate",
+          "Click the button or adjust the settings to automatically generate a new string"
+        ],
+        "copy_method": [
+          "Copy",
+          "Double-click the result box or click the copy button to copy the string to the clipboard"
+        ]
+      },
+      "thanks": []
+    }
+  },
+  "selected_message_box": {
+    "title": "Success",
+    "message": "Copied to clipboard!"
+  }
+}

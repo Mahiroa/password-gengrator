@@ -1,0 +1,74 @@
+{
+  "high_dpi_adaptation_failed": "高DPI适配失败",
+  "main_window_title": "安全随机字符串生成器",
+  "generate_algorithms": "生成算法",
+  "safe_random": "安全随机",
+  "seed_random": "种子随机",
+  "seed_generation_time": "种子生成时间",
+  "seed_expressions": "种子表达式",
+  "string_length": "字符串长度",
+  "character_type": "包含字符类型",
+  "uppercase_letters": "大写字母",
+  "lowercase_letters": "小写字母",
+  "digits": "阿拉伯数字",
+  "special_characters": "特殊字符",
+  "how_to_use": "怎么使用",
+  "rebuild": "重新生成",
+  "copy_to_clipboard": "复制到剪贴板",
+  "safe_random_introduce": "安全随机生成（不使用种子）",
+  "current_seed_time": "种子生成时间",
+  "char_pool_error": "至少需要选择一种字符类型！",
+  "empty_expression_message_box": {
+    "title": "空表达式",
+    "message": "种子表达式为空，是否使用默认表达式？"
+  },
+  "syntax_errors": {
+    "title": "语法错误",
+    "message": "种子表达式存在语法错误，请检查！"
+  },
+  "unknown_errors": {
+    "title": "未知错误",
+    "message": "生成过程中发生错误"
+  },
+  "help_message_box": {
+    "title": "使用帮助",
+    "message": {
+      "welcome": "欢迎使用随机字符串生成器！",
+      "usage": {
+        "safe_random": [
+          "安全随机",
+          "使用secrets模块生成安全随机字符串"
+        ],
+        "seed_expressions": [
+          "种子表达式",
+          "可以使用数学表达式，基于当前时间生成种子（支持math模块函数）"
+        ],
+        "the_characters_are_varied": [
+          "字符多样",
+          "包含大小写字母、数字和特殊字符，并且可以自定义"
+        ],
+        "string_length": [
+          "字符串长度",
+          "通过滑块或输入框设置长度（{self.length_min}-{self.length_max}）"
+        ],
+        "character_type": [
+          "字符类型",
+          "勾选需要包含的字符类型"
+        ],
+        "rebuild": [
+          "重新生成",
+          "点击按钮或调整设置自动生成新字符串"
+        ],
+        "copy_method": [
+          "复制",
+          "双击结果框或点击复制按钮将字符串复制到剪贴板"
+        ]
+      },
+      "thanks": []
+    }
+  },
+  "selected_message_box": {
+    "title": "成功",
+    "message": "已复制到剪贴板！"
+  }
+}

@@ -1,23 +1,40 @@
 import ctypes
 import datetime
+import json
 import logging
 import math
+import os
 import random
 import secrets
 import string
 import tkinter as tk
 from tkinter import ttk, messagebox, font
 
+from src.settings import Settings
+
 # 设置logger格式
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.ERROR)
+
+SETTINGS = Settings(logger)
+
+try:
+    with open("data/local.json") as f:
+        LOCAL = json.load(f)
+except Exception as __exp:
+    os.makedirs("data", exist_ok=True)
+    __config = {"local": "chinese"}
+    with open("data/local.json", "w") as f:
+        json.dump(__config, f)
 
 # 高DPI适配
 try:
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
 except Exception as _e:
-    logger.exception(f"高DPI适配失败：{str(_e)}")
+    logger.exception(f"高DPI适配失败: {str(_e)}")
 
 
 class RandomStringGenerator:
@@ -28,7 +45,9 @@ class RandomStringGenerator:
         # 创建主窗口
         self.root = root
         self.root.title(self.window_title)
-        self.root.geometry(f"{self.default_window_size[0]}x{self.default_window_size[1]}")
+        self.root.geometry(
+            f"{self.default_window_size[0]}x{self.default_window_size[1]}"
+        )
         self.root.minsize(self.min_window_size[0], self.min_window_size[1])
 
         # 初始化变量
@@ -45,12 +64,11 @@ class RandomStringGenerator:
         self.__create_widgets()
         self.generate_string()  # 初始生成
         self.center_window()
-        self.root.bind('<Configure>', self.on_window_resize)
+        self.root.bind("<Configure>", self.on_window_resize)
 
     def __settings(self):
         self.window_title = self.__generate_main_window_title(
-            title="安全随机字符串生成器",
-            version=(1, 1, 0)
+            title="安全随机字符串生成器", version=(1, 1, 0)
         )
         self.min_window_size = (400, 300)
         self.default_window_size = (550, 400)
@@ -73,25 +91,27 @@ class RandomStringGenerator:
         main_frame.rowconfigure(5, weight=1)
 
         # 算法选择
-        ttk.Label(main_frame, text="生成算法：").grid(row=0, column=0, sticky=tk.W)
+        ttk.Label(main_frame, text="生成算法: ").grid(row=0, column=0, sticky=tk.W)
         algorithm_combobox = ttk.Combobox(
             main_frame,
             textvariable=self.algorithm_var,
             values=["secrets (安全随机)", "random (种子随机)"],
             state="readonly",
-            width=15
+            width=15,
         )
         algorithm_combobox.grid(row=0, column=1, sticky=tk.W)
         algorithm_combobox.bind("<<ComboboxSelected>>", self.toggle_algorithm)
 
         # 当前时间显示（含毫秒）
-        self.time_label = ttk.Label(main_frame, text="种子生成时间：")
+        self.time_label = ttk.Label(main_frame, text="种子生成时间: ")
         self.time_label.grid(row=1, column=0, columnspan=4, sticky=tk.W)
 
         # 表达式输入
         self.expression_label = ttk.Label(main_frame, text="种子表达式：")
         self.expression_label.grid(row=2, column=0, sticky=tk.W)
-        self.expression_entry = ttk.Entry(main_frame, textvariable=self.expression_var, width=40)
+        self.expression_entry = ttk.Entry(
+            main_frame, textvariable=self.expression_var, width=40
+        )
         self.expression_entry.grid(row=2, column=1, columnspan=3, sticky=tk.EW, padx=5)
         self.toggle_algorithm(None)
 
@@ -104,41 +124,57 @@ class RandomStringGenerator:
             from_=self.length_min,
             to=self.length_max,
             textvariable=self.length_var,
-            width=8
+            width=8,
         )
         length_spinbox.grid(row=3, column=1, sticky=tk.W, padx=5)
-        length_spinbox.bind('<KeyRelease>', lambda e: self.generate_string())
-        length_spinbox.bind('<ButtonRelease>', lambda e: self.generate_string())
+        length_spinbox.bind("<KeyRelease>", lambda e: self.generate_string())
+        length_spinbox.bind("<ButtonRelease>", lambda e: self.generate_string())
         length_scale = ttk.Scale(  # 滑条（调整为整数步进）
             length_frame,
             from_=self.length_min,
             to=self.length_max,
             variable=self.length_var,
             orient=tk.HORIZONTAL,
-            command=lambda val: self.length_var.set(round(float(val)))
+            command=lambda val: self.length_var.set(round(float(val))),
         )
         length_scale.grid(row=3, column=2, columnspan=2, sticky=tk.EW)
 
-        self.root.bind('<Right>', self.right_arrow_binding)
-        self.root.bind('<Left>', self.left_arrow_binding)
-        self.root.bind('<Shift-Right>', self.right_arrow_binding_fast)
-        self.root.bind('<Shift-Left>', self.left_arrow_binding_fast)
-        length_scale.bind('<KeyRelease>', lambda e: self.generate_string())
-        length_scale.bind('<ButtonRelease>', lambda e: self.generate_string())
+        self.root.bind("<Right>", self.right_arrow_binding)
+        self.root.bind("<Left>", self.left_arrow_binding)
+        self.root.bind("<Shift-Right>", self.right_arrow_binding_fast)
+        self.root.bind("<Shift-Left>", self.left_arrow_binding_fast)
+        length_scale.bind("<KeyRelease>", lambda e: self.generate_string())
+        length_scale.bind("<ButtonRelease>", lambda e: self.generate_string())
 
         # 字符类型选择
         checkbox_frame = ttk.Frame(main_frame)
         checkbox_frame.grid(row=4, column=0, columnspan=5, sticky=tk.NSEW)
         checkbox_frame.columnconfigure((0, 1, 2, 3), weight=1)
-        ttk.Label(checkbox_frame, text="包含字符类型：").pack(side=tk.LEFT)
-        ttk.Checkbutton(checkbox_frame, text="大写字母", variable=self.include_upper,
-                        command=self.generate_string).pack(side=tk.LEFT)
-        ttk.Checkbutton(checkbox_frame, text="小写字母", variable=self.include_lower,
-                        command=self.generate_string).pack(side=tk.LEFT)
-        ttk.Checkbutton(checkbox_frame, text="阿拉伯数字", variable=self.include_number,
-                        command=self.generate_string).pack(side=tk.LEFT)
-        ttk.Checkbutton(checkbox_frame, text="特殊字符", variable=self.include_special,
-                        command=self.generate_string).pack(side=tk.LEFT)
+        ttk.Label(checkbox_frame, text="包含字符类型: ").pack(side=tk.LEFT)
+        ttk.Checkbutton(
+            checkbox_frame,
+            text="大写字母",
+            variable=self.include_upper,
+            command=self.generate_string,
+        ).pack(side=tk.LEFT)
+        ttk.Checkbutton(
+            checkbox_frame,
+            text="小写字母",
+            variable=self.include_lower,
+            command=self.generate_string,
+        ).pack(side=tk.LEFT)
+        ttk.Checkbutton(
+            checkbox_frame,
+            text="阿拉伯数字",
+            variable=self.include_number,
+            command=self.generate_string,
+        ).pack(side=tk.LEFT)
+        ttk.Checkbutton(
+            checkbox_frame,
+            text="特殊字符",
+            variable=self.include_special,
+            command=self.generate_string,
+        ).pack(side=tk.LEFT)
 
         # 结果显示区域
         result_frame = ttk.Frame(main_frame)
@@ -146,25 +182,27 @@ class RandomStringGenerator:
         self.result_text = tk.Text(
             result_frame,
             wrap=tk.NONE,
-            font=('TkDefaultFont', 12),
-            background='white',
-            relief='solid',
+            font=("TkDefaultFont", 12),
+            background="white",
+            relief="solid",
             padx=5,
             pady=5,
             state=tk.NORMAL,
             exportselection=True,
-            takefocus=0
+            takefocus=0,
         )
         self.result_text.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         # 滚动条
-        scroll_y = ttk.Scrollbar(result_frame, orient=tk.VERTICAL, command=self.result_text.yview)
+        scroll_y = ttk.Scrollbar(
+            result_frame, orient=tk.VERTICAL, command=self.result_text.yview
+        )
         scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
         self.result_text.configure(yscrollcommand=scroll_y.set)
 
         # 绑定事件
-        self.result_text.bind('<Double-Button-1>', self.copy_on_double_click)
-        self.result_text.bind('<Key>', lambda e: 'break')
+        self.result_text.bind("<Double-Button-1>", self.copy_on_double_click)
+        self.result_text.bind("<Key>", lambda e: "break")
 
         # 按钮布局（居中）
         btn_frame = ttk.Frame(main_frame)
@@ -173,9 +211,15 @@ class RandomStringGenerator:
         btn_frame.columnconfigure(1, weight=1)
         btn_frame.columnconfigure(2, weight=1)
 
-        ttk.Button(btn_frame, text="怎么使用", command=self.show_help).grid(row=0, column=0, sticky=tk.EW)
-        ttk.Button(btn_frame, text="重新生成", command=self.generate_string).grid(row=0, column=1, padx=5, sticky=tk.EW)
-        ttk.Button(btn_frame, text="复制到剪贴板", command=self.copy_to_clipboard).grid(row=0, column=2, sticky=tk.EW)
+        ttk.Button(btn_frame, text="怎么使用", command=self.show_help).grid(
+            row=0, column=0, sticky=tk.EW
+        )
+        ttk.Button(btn_frame, text="重新生成", command=self.generate_string).grid(
+            row=0, column=1, padx=5, sticky=tk.EW
+        )
+        ttk.Button(btn_frame, text="复制到剪贴板", command=self.copy_to_clipboard).grid(
+            row=0, column=2, sticky=tk.EW
+        )
 
     def right_arrow_binding(self, event):
         self.__useless_function(event)
@@ -223,13 +267,14 @@ class RandomStringGenerator:
                 self.length_var.set(self.length_default)
                 length = self.length_default
             if self.algorithm_var.get().startswith("secrets"):
-                generated = ''.join(secrets.choice(char_pool) for _ in range(length))
+                generated = "".join(secrets.choice(char_pool) for _ in range(length))
             else:
                 current_time = datetime.datetime.now()
                 time_str = current_time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-                self.time_label.config(text=f"种子生成时间：{time_str}")
+                self.time_label.config(text=f"种子生成时间: {time_str}")
                 total_seconds = (
-                        current_time - current_time.replace(hour=0, minute=0, second=0, microsecond=0)
+                        current_time
+                        - current_time.replace(hour=0, minute=0, second=0, microsecond=0)
                 ).total_seconds()
                 context = {
                     "math": math,
@@ -237,26 +282,28 @@ class RandomStringGenerator:
                     "hours": current_time.hour,
                     "minutes": current_time.minute,
                     "seconds": current_time.second,
-                    "microseconds": current_time.microsecond
+                    "microseconds": current_time.microsecond,
                 }
 
                 seed_value = eval(self.expression_var.get(), context)
                 random.seed(abs(seed_value))
-                generated = ''.join(random.choices(char_pool, k=length))
+                generated = "".join(random.choices(char_pool, k=length))
 
             self.result_text.config(state=tk.NORMAL)
-            self.result_text.delete('1.0', tk.END)
+            self.result_text.delete("1.0", tk.END)
             self.result_text.insert(tk.END, generated)
             self.adjust_wrap_mode()
         except SyntaxError as e:
             if not self.expression_var.get():
-                if messagebox.askyesno("表达式为空", "种子表达式为空，是否使用默认表达式？"):
+                if messagebox.askyesno(
+                        "表达式为空", "种子表达式为空，是否使用默认表达式？"
+                ):
                     self.expression_var.set(self.default_math_expression)
                     self.generate_string()
             else:
                 messagebox.showerror("语法错误", f"生成过程中发生错误：\n{str(e)}")
         except Exception as e:
-            messagebox.showerror("未知错误", f"生成过程中发生错误：\n{str(e)}")
+            messagebox.showerror("未知错误", f"生成过程中发生错误: \n{str(e)}")
 
     def format_length(self, length):
         if length < self.length_min:
@@ -291,11 +338,11 @@ class RandomStringGenerator:
         self.result_text.configure(wrap=tk.NONE)
         self.result_text.update_idletasks()
 
-        content = self.result_text.get('1.0', 'end-1c').strip()
+        content = self.result_text.get("1.0", "end-1c").strip()
         if not content:
             return
 
-        current_font = font.Font(font=self.result_text['font'])
+        current_font = font.Font(font=self.result_text["font"])
         text_width = current_font.measure(content)
         container_width = self.result_text.winfo_width()
 
@@ -306,8 +353,8 @@ class RandomStringGenerator:
 
     def copy_on_double_click(self, event):
         self.__useless_function(event)
-        if self.result_text.cget('wrap') == tk.NONE:
-            self.result_text.tag_add(tk.SEL, '1.0', tk.END)
+        if self.result_text.cget("wrap") == tk.NONE:
+            self.result_text.tag_add(tk.SEL, "1.0", tk.END)
             self.copy_to_clipboard()
             return "break"
         else:
@@ -320,7 +367,7 @@ class RandomStringGenerator:
             end = self.result_text.index(tk.SEL_LAST)
             selected = self.result_text.get(start, end)
         except tk.TclError:
-            selected = self.result_text.get('1.0', tk.END).strip()
+            selected = self.result_text.get("1.0", tk.END).strip()
 
         if selected:
             self.root.clipboard_clear()
@@ -333,7 +380,7 @@ class RandomStringGenerator:
         height = self.root.winfo_height()
         x = (self.root.winfo_screenwidth() // 2) - (width // 2)
         y = (self.root.winfo_screenheight() // 2) - (height // 2)
-        self.root.geometry(f'+{x}+{y}')
+        self.root.geometry(f"+{x}+{y}")
 
     def show_help(self):
         help_text = f"""欢迎使用随机字符串生成器！
@@ -356,7 +403,7 @@ class RandomStringGenerator:
         try:
             selected = self.result_text.get(tk.SEL_FIRST, tk.SEL_LAST)
         except tk.TclError:
-            selected = self.result_text.get('1.0', tk.END).strip()
+            selected = self.result_text.get("1.0", tk.END).strip()
 
         self.root.clipboard_clear()
         self.root.clipboard_append(selected)
