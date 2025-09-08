@@ -250,7 +250,7 @@ class RandomStringGenerator:
         self.generate_string()
 
     def toggle_algorithm(self, event):
-        self.__useless_function(event)
+        self.bind_keys()
         if "secrets" in self.algorithm_var.get():
             self.expression_entry.config(state=tk.DISABLED)
             self.time_label.config(text="安全随机生成（不使用种子）")
@@ -409,11 +409,14 @@ class RandomStringGenerator:
         self.root.clipboard_append(selected)
         messagebox.showinfo("成功", "已复制到剪贴板！")
 
-    def __useless_function(self, *args):
-        """暂时使用该函数来处理事件绑定的参数问题：
-        被绑定函数中要含有 event，但又无用。
-        """
-        pass
+    def bind_keys(self):
+        """绑定键盘事件"""
+        self.root.bind('<Escape>', self.exit_app)  # ESC键
+        self.root.bind('<q>', self.exit_app)  # 也可以绑定Q键
+        self.root.bind('<Control-q>', self.exit_app)  # Ctrl+Q
+
+    def exit_app(self, event=None):
+        self.root.quit()
 
 
 if __name__ == "__main__":
