@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安全随机字符串生成器 - 使用帮助</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+        }
+        
+        .main-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .sidebar {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            height: fit-content;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin: 25px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        h3 {
+            color: #3498db;
+            margin: 20px 0 10px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+        }
+        
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .card {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+        
+        .code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        
+        .nav-list {
+            list-style: none;
+            margin-left: 0;
+        }
+        
+        .nav-list li {
+            margin-bottom: 10px;
+        }
+        
+        .nav-list a {
+            display: block;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #2c3e50;
+            transition: all 0.3s;
+        }
+        
+        .nav-list a:hover {
+            background: #3498db;
+            color: white;
+        }
+        
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .example-item {
+            background: #e8f4fc;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #b8daff;
+        }
+        
+        .example-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #004085;
+        }
+        
+        .key-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .key-table th, .key-table td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .key-table th {
+            background: #3498db;
+            color: white;
+        }
+        
+        .key-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>安全随机字符串生成器</h1>
+            <p class="subtitle">完整使用指南与帮助文档</p>
+        </header>
+        
+        <div class="content">
+            <div class="main-content">
+                <section id="introduction">
+                    <h2>软件简介</h2>
+                    <p>安全随机字符串生成器是一款功能强大的随机数据生成工具，专为需要高质量随机字符串的用户设计。本软件提供两种随机生成模式，能够满足密码生成、测试数据创建、加密应用等多种场景需求。</p>
+                    
+                    <div class="card info">
+                        <p><strong>核心特性：</strong> 支持安全随机生成与种子随机生成、自定义字符类型、灵活的字符串长度控制、直观的用户界面。</p>
+                    </div>
+                </section>
+                
+                <section id="quick-start">
+                    <h2>快速开始</h2>
+                    <p>按照以下步骤快速生成您的第一个随机字符串：</p>
+                    
+                    <ol>
+                        <li>启动应用程序</li>
+                        <li>选择生成算法（安全随机或种子随机）</li>
+                        <li>设置字符串长度（1-1024字符）</li>
+                        <li>选择包含的字符类型（至少一种）</li>
+                        <li>点击"重新生成"或等待自动生成</li>
+                        <li>双击结果框或点击"复制到剪贴板"获取结果</li>
+                    </ol>
+                    
+                    <div class="card">
+                        <p><strong>提示：</strong> 程序在参数改变时会自动重新生成字符串，无需手动点击生成按钮。</p>
+                    </div>
+                </section>
+                
+                <section id="algorithms">
+                    <h2>生成算法详解</h2>
+                    
+                    <h3>Secrets安全随机算法</h3>
+                    <p>使用Python的<code>secrets</code>模块，提供加密级别的随机性：</p>
+                    <ul>
+                        <li><strong>安全性：</strong> 适合密码、令牌、密钥等安全敏感场景</li>
+                        <li><strong>随机源：</strong> 基于操作系统提供的加密安全随机源</li>
+                        <li><strong>特点：</strong> 真正的不可预测性，每次生成结果都不同</li>
+                    </ul>
+                    
+                    <h3>Random种子随机算法</h3>
+                    <p>使用时间种子生成可重现的随机序列：</p>
+                    <ul>
+                        <li><strong>适用场景：</strong> 测试数据生成、演示、需要重现结果的场景</li>
+                        <li><strong>特点：</strong> 通过相同种子可重现相同结果</li>
+                        <li><strong>配置：</strong> 需要设置种子表达式</li>
+                    </ul>
+                    
+                    <div class="card warning">
+                        <p><strong>重要：</strong> 安全敏感场景请务必使用Secrets安全随机算法，Random种子随机算法仅适用于非安全关键应用。</p>
+                    </div>
+                </section>
+                
+                <section id="expression">
+                    <h2>种子表达式系统</h2>
+                    <p>在Random种子随机模式下，可以使用数学表达式生成种子值：</p>
+                    
+                    <h3>内置变量</h3>
+                    <div class="example-grid">
+                        <div class="example-item">
+                            <div class="example-title">total_seconds</div>
+                            <p>当天已过去的秒数（0-86400）</p>
+                        </div>
+                        <div class="example-item">
+                            <div class="example-title">hours</div>
+                            <p>当前小时（0-23）</p>
+                        </div>
+                        <div class="example-item">
+                            <div class="example-title">minutes</div>
+                            <p>当前分钟（0-59）</p>
+                        </div>
+                        <div class="example-item">
+                            <div class="example-title">seconds</div>
+                            <p>当前秒数（0-59）</p>
+                        </div>
+                        <div class="example-item">
+                            <div class="example-title">microseconds</div>
+                            <p>当前微秒数（0-999999）</p>
+                        </div>
+                    </div>
+                    
+                    <h3>支持的数学函数</h3>
+                    <p>支持所有<code>math</code>模块函数，包括：<code>math.cos()</code>, <code>math.sin()</code>, <code>math.exp()</code>, <code>math.log()</code>, <code>math.sqrt()</code>等。</p>
+                    
+                    <h3>表达式示例</h3>
+                    <div class="code">
+                        math.cos(total_seconds)  # 使用余弦函数基于时间生成种子<br>
+                        hours * 3600 + minutes * 60 + seconds  # 自定义时间计算<br>
+                        (microseconds % 1000) * math.pi  # 结合微秒和圆周率<br>
+                        math.sin(total_seconds) * 1000  # 使用正弦函数并放大
+                    </div>
+                </section>
+                
+                <section id="char-types">
+                    <h2>字符类型配置</h2>
+                    <p>软件支持四种字符类型的任意组合：</p>
+                    
+                    <table class="key-table">
+                        <thead>
+                            <tr>
+                                <th>字符类型</th>
+                                <th>包含字符</th>
+                                <th>默认状态</th>
+                                <th>应用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>大写字母</td>
+                                <td>A-Z (26个字符)</td>
+                                <td>启用</td>
+                                <td>通用密码、标识符</td>
+                            </tr>
+                            <tr>
+                                <td>小写字母</td>
+                                <td>a-z (26个字符)</td>
+                                <td>启用</td>
+                                <td>通用密码、标识符</td>
+                            </tr>
+                            <tr>
+                                <td>阿拉伯数字</td>
+                                <td>0-9 (10个字符)</td>
+                                <td>启用</td>
+                                <td>增强复杂性、验证码</td>
+                            </tr>
+                            <tr>
+                                <td>特殊字符</td>
+                                <td>!@#$%^&*()_+-=[]{}|;:',.&lt;&gt;?/`~</td>
+                                <td>禁用</td>
+                                <td>高安全性密码</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="card warning">
+                        <p><strong>注意：</strong> 至少需要选择一种字符类型，否则无法生成字符串。</p>
+                    </div>
+                </section>
+                
+                <section id="shortcuts">
+                    <h2>快捷键大全</h2>
+                    
+                    <h3>通用快捷键</h3>
+                    <table class="key-table">
+                        <thead>
+                            <tr>
+                                <th>快捷键</th>
+                                <th>功能</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Ctrl+C</td>
+                                <td>复制选中文本</td>
+                            </tr>
+                            <tr>
+                                <td>Ctrl+A</td>
+                                <td>全选文本</td>
+                            </tr>
+                            <tr>
+                                <td>Escape / q / Ctrl+Q / Alt+F4</td>
+                                <td>退出程序</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h3>长度控制快捷键</h3>
+                    <table class="key-table">
+                        <thead>
+                            <tr>
+                                <th>快捷键</th>
+                                <th>功能</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>→</td>
+                                <td>长度增加1</td>
+                            </tr>
+                            <tr>
+                                <td>←</td>
+                                <td>长度减少1</td>
+                            </tr>
+                            <tr>
+                                <td>Shift+→</td>
+                                <td>长度增加10</td>
+                            </tr>
+                            <tr>
+                                <td>Shift+←</td>
+                                <td>长度减少10</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h3>鼠标操作</h3>
+                    <ul>
+                        <li><strong>双击结果框：</strong> 自动复制全部内容</li>
+                        <li><strong>拖动滑块：</strong> 快速调整长度</li>
+                        <li><strong>文本框选择：</strong> 支持部分文本复制</li>
+                    </ul>
+                </section>
+                
+                <section id="troubleshooting">
+                    <h2>故障排除</h2>
+                    
+                    <h3>常见问题与解决方案</h3>
+                    
+                    <div class="card">
+                        <p class="example-title">表达式语法错误</p>
+                        <p><strong>症状：</strong> 弹出语法错误提示框</p>
+                        <p><strong>解决：</strong> 检查表达式语法，确保变量名正确，使用有效的数学函数</p>
+                    </div>
+                    
+                    <div class="card">
+                        <p class="example-title">无字符类型选择</p>
+                        <p><strong>症状：</strong> 提示"至少需要选择一种字符类型"</p>
+                        <p><strong>解决：</strong> 至少勾选一种字符类型</p>
+                    </div>
+                    
+                    <div class="card">
+                        <p class="example-title">生成结果不显示</p>
+                        <p><strong>症状：</strong> 结果框空白或显示异常</p>
+                        <p><strong>解决：</strong> 减少字符串长度，检查表达式复杂度，重启应用程序</p>
+                    </div>
+                    
+                    <div class="card">
+                        <p class="example-title">复制功能失效</p>
+                        <p><strong>症状：</strong> 复制后粘贴无内容</p>
+                        <p><strong>解决：</strong> 检查系统剪贴板权限，尝试使用Ctrl+C手动复制，重启应用程序</p>
+                    </div>
+                </section>
+                
+                <section id="best-practices">
+                    <h2>最佳实践</h2>
+                    
+                    <h3>密码安全建议</h3>
+                    <ul>
+                        <li>使用secrets模式生成重要密码</li>
+                        <li>密码长度至少12个字符</li>
+                        <li>包含大写、小写、数字和特殊字符</li>
+                        <li>不同账户使用不同密码</li>
+                        <li>定期更换重要密码</li>
+                    </ul>
+                    
+                    <h3>测试数据生成</h3>
+                    <ul>
+                        <li>使用种子随机模式确保可重现性</li>
+                        <li>记录使用的种子表达式和参数</li>
+                        <li>根据测试需求设置特定字符类型</li>
+                    </ul>
+                    
+                    <h3>性能优化</h3>
+                    <ul>
+                        <li>生成长字符串(>512字符)时可能有轻微延迟</li>
+                        <li>避免使用过于复杂的数学表达式</li>
+                        <li>频繁调整参数时自动重新生成可能稍慢</li>
+                    </ul>
+                </section>
+            </div>
+            
+            <div class="sidebar">
+                <h2>导航菜单</h2>
+                <ul class="nav-list">
+                    <li><a href="#introduction">软件简介</a></li>
+                    <li><a href="#quick-start">快速开始</a></li>
+                    <li><a href="#algorithms">生成算法</a></li>
+                    <li><a href="#expression">种子表达式</a></li>
+                    <li><a href="#char-types">字符类型</a></li>
+                    <li><a href="#shortcuts">快捷键</a></li>
+                    <li><a href="#troubleshooting">故障排除</a></li>
+                    <li><a href="#best-practices">最佳实践</a></li>
+                </ul>
+                
+                <div class="card info">
+                    <p><strong>版本信息</strong></p>
+                    <p>当前版本: 1.3.3</p>
+                    <p>更新日期: 2025年10月1日</p>
+                </div>
+                
+                <div class="card">
+                    <p><strong>技术支持</strong></p>
+                    <p>如遇问题，请：</p>
+                    <ul>
+                        <li>查看相关帮助章节</li>
+                        <li>检查系统环境</li>
+                        <li>联系技术支持团队</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>安全随机字符串生成器 &copy; 2025 - 完整使用指南</p>
+            <p>本软件生成的随机字符串在secrets模式下具有加密级别的安全性，重要密码请务必使用secrets模式生成。</p>
+        </footer>
+    </div>
+    
+    <script>
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // 高亮当前章节
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-list a');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                    link.style.background = '#3498db';
+                    link.style.color = 'white';
+                } else {
+                    link.style.background = '';
+                    link.style.color = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

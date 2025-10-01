@@ -8,6 +8,7 @@ import random
 import secrets
 import string
 import tkinter as tk
+import webbrowser
 from tkinter import ttk, messagebox, font
 
 from src.settings import Settings
@@ -49,7 +50,6 @@ class RandomStringGenerator:
             f"{self.default_window_size[0]}x{self.default_window_size[1]}"
         )
         self.root.minsize(self.min_window_size[0], self.min_window_size[1])
-        self.bind_keys()
 
         # 初始化变量
         self.expression_var = tk.StringVar(value=self.default_math_expression)
@@ -65,22 +65,24 @@ class RandomStringGenerator:
         self.__create_widgets()
         self.generate_string()  # 初始生成
         self.center_window()
-        self.root.bind("<Configure>", self.on_window_resize)
+
+        # 绑定事件
+        self.event_bind()
 
     def __settings(self):
         self.window_title = self.__generate_main_window_title(
-            title="安全随机字符串生成器", version=(1, 2, 2)
+            title="安全随机字符串生成器", version=(1, 3, 3)
         )
         self.min_window_size = (400, 300)
         self.default_window_size = (550, 400)
         self.default_math_expression = "math.cos(total_seconds)"
         self.length_min = 1
         self.length_default = 16
-        self.length_max = 256
+        self.length_max = 1024
 
     @staticmethod
     def __generate_main_window_title(version: tuple, title: str) -> str:
-        window_title = f"{title} V{version[0]}.{version[1]}.{version[2]}.DGZEUFXR"
+        window_title = f"{title} V{version[0]}.{version[1]}.{version[2]}.{''.join(random.choices(string.ascii_uppercase, k=8))}"
         return window_title
 
     def __create_widgets(self):
@@ -200,10 +202,6 @@ class RandomStringGenerator:
         )
         scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
         self.result_text.configure(yscrollcommand=scroll_y.set)
-
-        # 绑定事件
-        self.result_text.bind("<Double-Button-1>", self.copy_on_double_click)
-        self.result_text.bind("<Key>", lambda e: "break")
 
         # 按钮布局（居中）
         btn_frame = ttk.Frame(main_frame)
@@ -378,21 +376,14 @@ class RandomStringGenerator:
         self.root.geometry(f"+{x}+{y}")
 
     def show_help(self):
-        help_text = f"""欢迎使用随机字符串生成器！
+        # 获取当前文件所在目录
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        # 构建帮助文件的完整路径
+        help_file = os.path.join(current_dir, "help.html")
 
-使用方法：
-1. 安全随机：使用secrets模块生成安全随机字符串
-2. 种子表达式：可以使用数学表达式，基于当前时间生成种子（支持math模块函数）
-3. 字符串长度：通过滑块或输入框设置长度（{self.length_min}-{self.length_max}）
-4. 字符类型：勾选需要包含的字符类型
-5. 重新生成：点击按钮或调整设置自动生成新字符串
-6. 双击结果框或点击复制按钮将字符串复制到剪贴板
-
-注意事项：
-- 至少需要选择一种字符类型
-- 种子表达式错误会导致生成失败
-- 时间种子精确到毫秒级"""
-        messagebox.showinfo("使用帮助", help_text)
+        # 检查文件是否存在
+        if os.path.exists(help_file):
+            webbrowser.open(f"file://{help_file}")
 
     def copy_to_clipboard(self):
         try:
@@ -404,11 +395,22 @@ class RandomStringGenerator:
         self.root.clipboard_append(selected)
         messagebox.showinfo("成功", "已复制到剪贴板！")
 
-    def bind_keys(self):
-        """绑定键盘事件"""
-        __keys = ['Escape', 'q', 'Control-q', 'Alt-F4']
-        for key in __keys:
-            self.root.bind(f"<{key}>", self.exit_app)
+    def event_bind(self):
+        """绑定事件"""
+        self.root.bind("<Configure>", self.on_window_resize)
+
+        # 绑定功能按键
+        __copy_keys = ['Control-c', 'Control-a']
+        for __copy_key in __copy_keys:
+            self.root.bind(f"<{__copy_key}>", self.copy_on_double_click)
+            self.result_text.bind(f"<{__copy_key}>", self.copy_on_double_click)
+        self.result_text.bind('<Double-Button-1>', self.copy_on_double_click)
+
+        # 绑定退出按键
+        __exit_keys = ['Escape', 'q', 'Control-q', 'Alt-F4']
+        for __exit_key in __exit_keys:
+            self.root.bind(f"<{__exit_key}>", self.exit_app)
+            self.result_text.bind(f"<{__exit_key}>", self.exit_app)
 
         # 为文本框添加焦点事件，当获得焦点时设置一个标志
         for widget in self.root.winfo_children():
