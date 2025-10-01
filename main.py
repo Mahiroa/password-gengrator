@@ -6,7 +6,7 @@
 from src import tkinter_version
 
 
-class CLASSNAME:
+class ClickRun:
     def __init__(self):
         pass
 
@@ -17,5 +17,5 @@ class CLASSNAME:
 
 
 if __name__ == "__main__":
-    app = CLASSNAME()
+    app = ClickRun()
     app.run_tkinter_version()

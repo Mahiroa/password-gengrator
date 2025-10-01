@@ -7,8 +7,8 @@ import os
 import random
 import secrets
 import string
+import sys
 import tkinter as tk
-import webbrowser
 from tkinter import ttk, messagebox, font
 
 from src.settings import Settings
@@ -39,35 +39,39 @@ except Exception as _e:
 
 
 class RandomStringGenerator:
-    def __init__(self, root):
-        # 初始化设置，后续移动到一个json文件中实现程序配置热更新
+    def __init__(self, root=None):
+        # 初始化设置
         self.__settings()
 
-        # 创建主窗口
-        self.root = root
-        self.root.title(self.window_title)
-        self.root.geometry(
-            f"{self.default_window_size[0]}x{self.default_window_size[1]}"
-        )
-        self.root.minsize(self.min_window_size[0], self.min_window_size[1])
+        # 如果是GUI模式
+        if root:
+            self.gui_mode = True
+            self.root = root
+            self.root.title(self.window_title)
+            self.root.geometry(
+                f"{self.default_window_size[0]}x{self.default_window_size[1]}"
+            )
+            self.root.minsize(self.min_window_size[0], self.min_window_size[1])
 
-        # 初始化变量
-        self.expression_var = tk.StringVar(value=self.default_math_expression)
-        self.length_var = tk.IntVar(value=self.length_default)
-        self.include_upper = tk.BooleanVar(value=True)
-        self.include_lower = tk.BooleanVar(value=True)
-        self.include_number = tk.BooleanVar(value=True)
-        self.include_special = tk.BooleanVar(value=False)
-        self.algorithm_var = tk.StringVar(value="secrets")
-        self.result_var = tk.StringVar()
+            # 初始化变量
+            self.expression_var = tk.StringVar(value=self.default_math_expression)
+            self.length_var = tk.IntVar(value=self.length_default)
+            self.include_upper = tk.BooleanVar(value=True)
+            self.include_lower = tk.BooleanVar(value=True)
+            self.include_number = tk.BooleanVar(value=True)
+            self.include_special = tk.BooleanVar(value=False)
+            self.algorithm_var = tk.StringVar(value="secrets")
+            self.result_var = tk.StringVar()
 
-        # 创建UI组件
-        self.__create_widgets()
-        self.generate_string()  # 初始生成
-        self.center_window()
+            # 创建UI组件
+            self.__create_widgets()
+            self.generate_string()  # 初始生成
+            self.center_window()
 
-        # 绑定事件
-        self.event_bind()
+            # 绑定事件
+            self.event_bind()
+        else:
+            self.gui_mode = False
 
     def __settings(self):
         self.window_title = self.__generate_main_window_title(
@@ -252,20 +256,32 @@ class RandomStringGenerator:
             self.expression_entry.config(state=tk.NORMAL)
             self.generate_string()
 
-    def generate_string(self):
+    def generate_string(self, length=None, include_upper=None, include_lower=None,
+                        include_number=None, include_special=None):
+        """生成随机字符串，支持GUI和CLI模式"""
         try:
-            char_pool = self.get_char_pool()
-            try:
-                length = self.format_length(self.length_var.get())
-            except tk.TclError:
-                self.length_var.set(self.length_default)
-                length = self.length_default
-            if self.algorithm_var.get().startswith("secrets"):
+            # 使用传入的参数或GUI控件的值
+            if length is None:
+                length = self.format_length(self.length_var.get()) if self.gui_mode else self.length_default
+            if include_upper is None:
+                include_upper = self.include_upper.get() if self.gui_mode else True
+            if include_lower is None:
+                include_lower = self.include_lower.get() if self.gui_mode else True
+            if include_number is None:
+                include_number = self.include_number.get() if self.gui_mode else True
+            if include_special is None:
+                include_special = self.include_special.get() if self.gui_mode else False
+
+            char_pool = self.get_char_pool(include_upper, include_lower, include_number, include_special)
+
+            # 在CLI模式下始终使用secrets算法
+            if not self.gui_mode or "secrets" in self.algorithm_var.get():
                 generated = "".join(secrets.choice(char_pool) for _ in range(length))
             else:
                 current_time = datetime.datetime.now()
                 time_str = current_time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-                self.time_label.config(text=f"种子生成时间: {time_str}")
+                if self.gui_mode:
+                    self.time_label.config(text=f"种子生成时间: {time_str}")
                 total_seconds = (
                         current_time
                         - current_time.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -283,40 +299,57 @@ class RandomStringGenerator:
                 random.seed(abs(seed_value))
                 generated = "".join(random.choices(char_pool, k=length))
 
-            self.result_text.config(state=tk.NORMAL)
-            self.result_text.delete("1.0", tk.END)
-            self.result_text.insert(tk.END, generated)
-            self.adjust_wrap_mode()
+            # GUI模式更新界面
+            if self.gui_mode:
+                self.result_text.config(state=tk.NORMAL)
+                self.result_text.delete("1.0", tk.END)
+                self.result_text.insert(tk.END, generated)
+                self.adjust_wrap_mode()
+
+            return generated
+
         except SyntaxError as e:
             if not self.expression_var.get():
-                if messagebox.askyesno(
+                if self.gui_mode and messagebox.askyesno(
                         "表达式为空", "种子表达式为空，是否使用默认表达式？"
                 ):
                     self.expression_var.set(self.default_math_expression)
-                    self.generate_string()
+                    return self.generate_string(length, include_upper, include_lower, include_number, include_special)
             else:
-                messagebox.showerror("语法错误", f"生成过程中发生错误：\n{str(e)}")
+                if self.gui_mode:
+                    messagebox.showerror("语法错误", f"生成过程中发生错误：\n{str(e)}")
+                else:
+                    print(f"错误: {str(e)}")
+            return None
         except Exception as e:
-            messagebox.showerror("未知错误", f"生成过程中发生错误: \n{str(e)}")
+            if self.gui_mode:
+                messagebox.showerror("未知错误", f"生成过程中发生错误: \n{str(e)}")
+            else:
+                print(f"错误: {str(e)}")
+            return None
 
     def format_length(self, length):
         if length < self.length_min:
-            self.length_var.set(self.length_min)
+            if self.gui_mode:
+                self.length_var.set(self.length_min)
             length = self.length_min
         elif length > self.length_max:
-            self.length_var.set(self.length_max)
+            if self.gui_mode:
+                self.length_var.set(self.length_max)
             length = self.length_max
         return length
 
-    def get_char_pool(self):
+    def get_char_pool(self, include_upper=True, include_lower=True,
+                      include_number=True, include_special=False):
+        """获取字符池"""
         char_pool = []
-        if self.include_upper.get():
+        if include_upper:
             char_pool.extend(string.ascii_uppercase)
-        if self.include_lower.get():
+        if include_lower:
             char_pool.extend(string.ascii_lowercase)
-        if self.include_number.get():
+        if include_number:
             char_pool.extend("0123456789")
-        if self.include_special.get():
+        if include_special:
             char_pool.extend("!@#$%^&*()_+-=[]{}|;:',.<>?/`~")
 
         if not char_pool:
@@ -376,14 +409,25 @@ class RandomStringGenerator:
         self.root.geometry(f"+{x}+{y}")
 
     def show_help(self):
-        # 获取当前文件所在目录
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        # 构建帮助文件的完整路径
-        help_file = os.path.join(current_dir, "help.html")
+        help_text = f"""欢迎使用随机字符串生成器！
 
-        # 检查文件是否存在
-        if os.path.exists(help_file):
-            webbrowser.open(f"file://{help_file}")
+使用方法：
+1. 安全随机：使用secrets模块生成安全随机字符串
+2. 种子表达式：可以使用数学表达式，基于当前时间生成种子（支持math模块函数）
+3. 字符串长度：通过滑块或输入框设置长度（{self.length_min}-{self.length_max}）
+4. 字符类型：勾选需要包含的字符类型
+5. 重新生成：点击按钮或调整设置自动生成新字符串
+6. 双击结果框或点击复制按钮将字符串复制到剪贴板
+
+命令行用法：
+pwdgen [长度] [大写] [小写] [数字] [特殊字符]
+例如：pwdgen 16 1 1 1 0
+
+注意事项：
+- 至少需要选择一种字符类型
+- 种子表达式错误会导致生成失败
+- 时间种子精确到毫秒级"""
+        messagebox.showinfo("使用帮助", help_text)
 
     def copy_to_clipboard(self):
         try:
@@ -423,3 +467,73 @@ class RandomStringGenerator:
 
     def exit_app(self, event=None):
         self.root.quit()
+
+
+def parse_command_line():
+    """解析命令行参数"""
+    if len(sys.argv) == 1:
+        # 没有参数，启动GUI模式
+        return None
+
+    if len(sys.argv) != 6:
+        print("用法: pwdgen [长度] [大写] [小写] [数字] [特殊字符]")
+        print("示例: pwdgen 16 1 1 1 0")
+        print("说明: 后四个参数为开关，1表示启用，0表示禁用")
+        sys.exit(1)
+
+    try:
+        length = int(sys.argv[1])
+        include_upper = bool(int(sys.argv[2]))
+        include_lower = bool(int(sys.argv[3]))
+        include_number = bool(int(sys.argv[4]))
+        include_special = bool(int(sys.argv[5]))
+
+        # 验证参数
+        if length < 1 or length > 1024:
+            print("错误: 长度必须在1-1024之间")
+            sys.exit(1)
+
+        if not any([include_upper, include_lower, include_number, include_special]):
+            print("错误: 至少需要启用一种字符类型")
+            sys.exit(1)
+
+        return {
+            'length': length,
+            'include_upper': include_upper,
+            'include_lower': include_lower,
+            'include_number': include_number,
+            'include_special': include_special
+        }
+    except ValueError:
+        print("错误: 参数格式不正确")
+        print("请确保长度是数字，其他参数是0或1")
+        sys.exit(1)
+
+
+def main():
+    """主函数"""
+    # 解析命令行参数
+    cli_args = parse_command_line()
+
+    if cli_args is None:
+        # GUI模式
+        root = tk.Tk()
+        app = RandomStringGenerator(root)
+        root.mainloop()
+    else:
+        # CLI模式
+        generator = RandomStringGenerator()
+        result = generator.generate_string(
+            length=cli_args['length'],
+            include_upper=cli_args['include_upper'],
+            include_lower=cli_args['include_lower'],
+            include_number=cli_args['include_number'],
+            include_special=cli_args['include_special']
+        )
+
+        if result:
+            print(result)
+
+
+if __name__ == "__main__":
+    main()
