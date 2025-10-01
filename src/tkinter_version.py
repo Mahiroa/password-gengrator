@@ -49,6 +49,7 @@ class RandomStringGenerator:
             f"{self.default_window_size[0]}x{self.default_window_size[1]}"
         )
         self.root.minsize(self.min_window_size[0], self.min_window_size[1])
+        self.bind_keys()
 
         # 初始化变量
         self.expression_var = tk.StringVar(value=self.default_math_expression)
@@ -68,7 +69,7 @@ class RandomStringGenerator:
 
     def __settings(self):
         self.window_title = self.__generate_main_window_title(
-            title="安全随机字符串生成器", version=(1, 2, 1)
+            title="安全随机字符串生成器", version=(1, 2, 2)
         )
         self.min_window_size = (400, 300)
         self.default_window_size = (550, 400)
@@ -246,7 +247,6 @@ class RandomStringGenerator:
         self.generate_string()
 
     def toggle_algorithm(self, event):
-        self.bind_keys()
         if "secrets" in self.algorithm_var.get():
             self.expression_entry.config(state=tk.DISABLED)
             self.time_label.config(text="安全随机生成（不使用种子）")
@@ -406,10 +406,18 @@ class RandomStringGenerator:
 
     def bind_keys(self):
         """绑定键盘事件"""
-        self.root.bind('<Escape>', self.exit_app)  # ESC键
-        self.root.bind('<q>', self.exit_app)  # 也可以绑定Q键
-        self.root.bind('<Control-q>', self.exit_app)  # Ctrl+Q
-        self.root.bind('<Alt-F4>', self.exit_app)
+        __keys = ['Escape', 'q', 'Control-q', 'Alt-F4']
+        for key in __keys:
+            self.root.bind(f"<{key}>", self.exit_app)
+
+        # 为文本框添加焦点事件，当获得焦点时设置一个标志
+        for widget in self.root.winfo_children():
+            if isinstance(widget, tk.Text) or isinstance(widget, tk.Entry):
+                widget.bind('<FocusIn>', self.on_text_focus)
+
+    def on_text_focus(self, event):
+        # 文本框获得焦点时，将事件重新绑定到根窗口
+        self.root.focus_set()
 
     def exit_app(self, event=None):
         self.root.quit()
