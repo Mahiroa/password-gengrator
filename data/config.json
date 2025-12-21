@@ -1,3 +1,29 @@
 {
-  "local": "chinese"
+    "local": "chinese",
+    "default_math_expression": "math.cos(total_seconds)",
+    "window_title": "安全随机字符串生成器",
+    "version": [
+        1,
+        3,
+        3
+    ],
+    "min_window_size": [
+        400,
+        300
+    ],
+    "default_window_size": [
+        550,
+        400
+    ],
+    "length_min": 1,
+    "length_default": 16,
+    "length_max": 1024,
+    "default_algorithm": "secrets",
+    "default_include_upper": true,
+    "default_include_lower": true,
+    "default_include_number": true,
+    "default_include_special": false,
+    "copy_highlight_enabled": true,
+    "copy_bubble_enabled": true,
+    "copy_highlight_color": "#FFFF99"
 }

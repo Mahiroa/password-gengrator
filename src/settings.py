@@ -20,7 +20,15 @@ class Settings:
             "default_window_size": [550, 400],
             "length_min": 1,
             "length_default": 16,
-            "length_max": 1024
+            "length_max": 1024,
+            "default_algorithm": "secrets",
+            "default_include_upper": True,
+            "default_include_lower": True,
+            "default_include_number": True,
+            "default_include_special": False,
+            "copy_highlight_enabled": True,
+            "copy_bubble_enabled": True,
+            "copy_highlight_color": "#FFFF99"
         }
         self._config = self._default_config.copy()
         self.load()
