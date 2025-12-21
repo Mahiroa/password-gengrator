@@ -40,8 +40,8 @@ except Exception as _e:
 
 class RandomStringGenerator:
     def __init__(self, root):
-        # 初始化设置，后续移动到一个json文件中实现程序配置热更新
-        self.__settings()
+        # 初始化设置，从配置中加载
+        self._settings()
 
         # 创建主窗口
         self.root = root
@@ -62,30 +62,45 @@ class RandomStringGenerator:
         self.result_var = tk.StringVar()
 
         # 创建UI组件
-        self.__create_widgets()
+        self._create_widgets()
         self.generate_string()  # 初始生成
         self.center_window()
 
         # 绑定事件
         self.event_bind()
 
-    def __settings(self):
-        self.window_title = self.__generate_main_window_title(
-            title="安全随机字符串生成器", version=(1, 3, 3)
-        )
-        self.min_window_size = (400, 300)
-        self.default_window_size = (550, 400)
-        self.default_math_expression = "math.cos(total_seconds)"
-        self.length_min = 1
-        self.length_default = 16
-        self.length_max = 1024
+    def _settings(self):
+        """初始化设置，从配置中加载"""
+        self._load_settings()
 
-    @staticmethod
-    def __generate_main_window_title(version: tuple, title: str) -> str:
+    def _load_settings(self):
+        """从配置对象加载设置"""
+        # 应用配置
+        self.window_title = self._generate_main_window_title(
+            title=SETTINGS.window_title, version=tuple(SETTINGS.version)
+        )
+        self.min_window_size = tuple(SETTINGS.min_window_size)
+        self.default_window_size = tuple(SETTINGS.default_window_size)
+        self.default_math_expression = SETTINGS.default_math_expression
+        self.length_min = SETTINGS.length_min
+        self.length_default = SETTINGS.length_default
+        self.length_max = SETTINGS.length_max
+
+    def reload_settings(self):
+        """重新加载配置"""
+        SETTINGS.reload()
+        self._load_settings()
+        self.root.title(self.window_title)
+        self.root.minsize(*self.min_window_size)
+        logger.info("配置已热更新")
+
+    def _generate_main_window_title(self, version: tuple, title: str) -> str:
+        """生成主窗口标题"""
         window_title = f"{title} V{version[0]}.{version[1]}.{version[2]}.{''.join(random.choices(string.ascii_uppercase, k=8))}"
         return window_title
 
-    def __create_widgets(self):
+    def _create_widgets(self):
+        """创建UI组件"""
         main_frame = ttk.Frame(self.root, padding=20)
         main_frame.pack(fill=tk.BOTH, expand=True)
 
@@ -142,10 +157,11 @@ class RandomStringGenerator:
         )
         length_scale.grid(row=3, column=2, columnspan=2, sticky=tk.EW)
 
-        self.root.bind("<Right>", self.right_arrow_binding)
-        self.root.bind("<Left>", self.left_arrow_binding)
-        self.root.bind("<Shift-Right>", self.right_arrow_binding_fast)
-        self.root.bind("<Shift-Left>", self.left_arrow_binding_fast)
+        # 绑定方向键控制长度
+        self.root.bind("<Right>", self._handle_right_arrow)
+        self.root.bind("<Left>", self._handle_left_arrow)
+        self.root.bind("<Shift-Right>", self._handle_right_arrow_fast)
+        self.root.bind("<Shift-Left>", self._handle_left_arrow_fast)
         length_scale.bind("<KeyRelease>", lambda e: self.generate_string())
         length_scale.bind("<ButtonRelease>", lambda e: self.generate_string())
 
@@ -220,25 +236,29 @@ class RandomStringGenerator:
             row=0, column=2, sticky=tk.EW
         )
 
-    def right_arrow_binding(self, event):
+    def _handle_right_arrow(self, event):
+        """处理右箭头键，增加长度"""
         current_value = self.length_var.get()
         if current_value < self.length_max:
             self.length_var.set(current_value + 1)
         self.generate_string()
 
-    def right_arrow_binding_fast(self, event):
+    def _handle_right_arrow_fast(self, event):
+        """处理Shift+右箭头键，快速增加长度"""
         current_value = self.length_var.get()
         if current_value < self.length_max:
             self.length_var.set(current_value + 10)
         self.generate_string()
 
-    def left_arrow_binding(self, event):
+    def _handle_left_arrow(self, event):
+        """处理左箭头键，减少长度"""
         current_value = self.length_var.get()
         if current_value > self.length_min:
             self.length_var.set(current_value - 1)
         self.generate_string()
 
-    def left_arrow_binding_fast(self, event):
+    def _handle_left_arrow_fast(self, event):
+        """处理Shift+左箭头键，快速减少长度"""
         current_value = self.length_var.get()
         if current_value > self.length_min:
             self.length_var.set(current_value - 10)
@@ -255,49 +275,75 @@ class RandomStringGenerator:
     def generate_string(self):
         try:
             char_pool = self.get_char_pool()
-            try:
-                length = self.format_length(self.length_var.get())
-            except tk.TclError:
-                self.length_var.set(self.length_default)
-                length = self.length_default
-            if self.algorithm_var.get().startswith("secrets"):
-                generated = "".join(secrets.choice(char_pool) for _ in range(length))
-            else:
-                current_time = datetime.datetime.now()
-                time_str = current_time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-                self.time_label.config(text=f"种子生成时间: {time_str}")
-                total_seconds = (
-                        current_time
-                        - current_time.replace(hour=0, minute=0, second=0, microsecond=0)
-                ).total_seconds()
-                context = {
-                    "math": math,
-                    "total_seconds": total_seconds,
-                    "hours": current_time.hour,
-                    "minutes": current_time.minute,
-                    "seconds": current_time.second,
-                    "microseconds": current_time.microsecond,
-                }
-
-                seed_value = eval(self.expression_var.get(), context)
-                random.seed(abs(seed_value))
-                generated = "".join(random.choices(char_pool, k=length))
-
-            self.result_text.config(state=tk.NORMAL)
-            self.result_text.delete("1.0", tk.END)
-            self.result_text.insert(tk.END, generated)
-            self.adjust_wrap_mode()
+            length = self._get_valid_length()
+            generated = self._generate_with_selected_algorithm(char_pool, length)
+            self._display_result(generated)
         except SyntaxError as e:
-            if not self.expression_var.get():
-                if messagebox.askyesno(
-                        "表达式为空", "种子表达式为空，是否使用默认表达式？"
-                ):
-                    self.expression_var.set(self.default_math_expression)
-                    self.generate_string()
-            else:
-                messagebox.showerror("语法错误", f"生成过程中发生错误：\n{str(e)}")
+            self._handle_syntax_error(e)
         except Exception as e:
             messagebox.showerror("未知错误", f"生成过程中发生错误: \n{str(e)}")
+
+    def _get_valid_length(self):
+        """获取有效的长度值"""
+        try:
+            return self.format_length(self.length_var.get())
+        except tk.TclError:
+            self.length_var.set(self.length_default)
+            return self.length_default
+
+    def _generate_with_selected_algorithm(self, char_pool, length):
+        """根据选择的算法生成随机字符串"""
+        if self.algorithm_var.get().startswith("secrets"):
+            return self._generate_secrets(char_pool, length)
+        else:
+            return self._generate_random_with_seed(char_pool, length)
+
+    def _generate_secrets(self, char_pool, length):
+        """使用secrets模块生成安全随机字符串"""
+        return "".join(secrets.choice(char_pool) for _ in range(length))
+
+    def _generate_random_with_seed(self, char_pool, length):
+        """使用random模块和种子生成随机字符串"""
+        current_time = datetime.datetime.now()
+        time_str = current_time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+        self.time_label.config(text=f"种子生成时间: {time_str}")
+        
+        total_seconds = (
+                current_time
+                - current_time.replace(hour=0, minute=0, second=0, microsecond=0)
+        ).total_seconds()
+        
+        context = {
+            "math": math,
+            "total_seconds": total_seconds,
+            "hours": current_time.hour,
+            "minutes": current_time.minute,
+            "seconds": current_time.second,
+            "microseconds": current_time.microsecond,
+        }
+
+        seed_value = eval(self.expression_var.get(), context)
+        random.seed(abs(seed_value))
+        return "".join(random.choices(char_pool, k=length))
+
+    def _display_result(self, generated):
+        """显示生成的结果"""
+        self.result_text.config(state=tk.NORMAL)
+        self.result_text.delete("1.0", tk.END)
+        self.result_text.insert(tk.END, generated)
+        self.result_text.config(state=tk.DISABLED)
+        self.adjust_wrap_mode()
+
+    def _handle_syntax_error(self, e):
+        """处理语法错误"""
+        if not self.expression_var.get():
+            if messagebox.askyesno(
+                    "表达式为空", "种子表达式为空，是否使用默认表达式？"
+            ):
+                self.expression_var.set(self.default_math_expression)
+                self.generate_string()
+        else:
+            messagebox.showerror("语法错误", f"生成过程中发生错误：\n{str(e)}")
 
     def format_length(self, length):
         if length < self.length_min:
@@ -355,19 +401,11 @@ class RandomStringGenerator:
             return None
 
     def copy_selected(self):
-        try:
-            start = self.result_text.index(tk.SEL_FIRST)
-            end = self.result_text.index(tk.SEL_LAST)
-            selected = self.result_text.get(start, end)
-        except tk.TclError:
-            selected = self.result_text.get("1.0", tk.END).strip()
-
-        if selected:
-            self.root.clipboard_clear()
-            self.root.clipboard_append(selected)
-            messagebox.showinfo("成功", "已复制到剪贴板！")
+        """复制选中的文本或全部文本"""
+        self.copy_to_clipboard()
 
     def center_window(self):
+        """将窗口居中显示"""
         self.root.update_idletasks()
         width = self.root.winfo_width()
         height = self.root.winfo_height()
@@ -376,46 +414,76 @@ class RandomStringGenerator:
         self.root.geometry(f"+{x}+{y}")
 
     def show_help(self):
-        # 获取当前文件所在目录
+        """显示帮助文档"""
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        # 构建帮助文件的完整路径
         help_file = os.path.join(current_dir, "help.html")
-
-        # 检查文件是否存在
         if os.path.exists(help_file):
             webbrowser.open(f"file://{help_file}")
+        else:
+            messagebox.showinfo("帮助", "帮助文件不存在")
 
     def copy_to_clipboard(self):
+        """复制文本到剪贴板，优化用户体验"""
         try:
             selected = self.result_text.get(tk.SEL_FIRST, tk.SEL_LAST)
         except tk.TclError:
             selected = self.result_text.get("1.0", tk.END).strip()
 
-        self.root.clipboard_clear()
-        self.root.clipboard_append(selected)
-        messagebox.showinfo("成功", "已复制到剪贴板！")
+        if selected:
+            self.root.clipboard_clear()
+            self.root.clipboard_append(selected)
+            # 优化：使用短暂提示替代弹窗
+            self._show_temporary_message("已复制到剪贴板！")
+
+    def _show_temporary_message(self, message, duration=1500):
+        """显示临时消息提示"""
+        # 创建临时提示窗口
+        temp_window = tk.Toplevel(self.root)
+        temp_window.overrideredirect(True)  # 去掉窗口边框
+        temp_window.attributes("-topmost", True)  # 置顶显示
+        temp_window.attributes("-alpha", 0.8)  # 设置透明度
+        
+        # 创建标签
+        label = ttk.Label(temp_window, text=message, padding=(10, 5), background="#333", foreground="white", relief="solid")
+        label.pack()
+        
+        # 计算位置（底部居中）
+        temp_window.update_idletasks()
+        x = (self.root.winfo_width() // 2) - (temp_window.winfo_width() // 2)
+        y = self.root.winfo_height() - temp_window.winfo_height() - 20
+        temp_window.geometry(f"+{x}+{y}")
+        
+        # 定时销毁窗口
+        temp_window.after(duration, temp_window.destroy)
 
     def event_bind(self):
         """绑定事件"""
         self.root.bind("<Configure>", self.on_window_resize)
 
-        # 绑定功能按键
-        __copy_keys = ['Control-c', 'Control-a']
-        for __copy_key in __copy_keys:
-            self.root.bind(f"<{__copy_key}>", self.copy_on_double_click)
-            self.result_text.bind(f"<{__copy_key}>", self.copy_on_double_click)
-        self.result_text.bind('<Double-Button-1>', self.copy_on_double_click)
+        # 绑定复制相关事件
+        copy_events = ['<Control-c>', '<Control-a>', '<Double-Button-1>']
+        for event in copy_events:
+            self.root.bind(event, self.copy_on_double_click)
+            self.result_text.bind(event, self.copy_on_double_click)
 
-        # 绑定退出按键
-        __exit_keys = ['Escape', 'q', 'Control-q', 'Alt-F4']
-        for __exit_key in __exit_keys:
-            self.root.bind(f"<{__exit_key}>", self.exit_app)
-            self.result_text.bind(f"<{__exit_key}>", self.exit_app)
+        # 绑定退出事件
+        exit_events = ['<Escape>', '<q>', '<Control-q>', '<Alt-F4>']
+        for event in exit_events:
+            self.root.bind(event, self.exit_app)
+            self.result_text.bind(event, self.exit_app)
 
-        # 为文本框添加焦点事件，当获得焦点时设置一个标志
-        for widget in self.root.winfo_children():
-            if isinstance(widget, tk.Text) or isinstance(widget, tk.Entry):
+        # 绑定焦点事件
+        self._bind_focus_events()
+
+    def _bind_focus_events(self):
+        """为文本和输入框绑定焦点事件"""
+        def bind_focus_recursive(widget):
+            if isinstance(widget, (tk.Text, tk.Entry)):
                 widget.bind('<FocusIn>', self.on_text_focus)
+            for child in widget.winfo_children():
+                bind_focus_recursive(child)
+        
+        bind_focus_recursive(self.root)
 
     def on_text_focus(self, event):
         # 文本框获得焦点时，将事件重新绑定到根窗口
