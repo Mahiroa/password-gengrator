@@ -3,19 +3,18 @@
 # @Author   : Mahiro
 # @File     : main.py
 
-from src import tkinter_version
+import sys
+from src import pyside_version
 
 
 class ClickRun:
     def __init__(self):
         pass
 
-    def run_tkinter_version(self):
-        __window = tkinter_version.tk.Tk()
-        tkinter_version.RandomStringGenerator(__window)
-        __window.mainloop()
+    def run_pyside_version(self):
+        pyside_version.main()
 
 
 if __name__ == "__main__":
     app = ClickRun()
-    app.run_tkinter_version()
+    app.run_pyside_version()
